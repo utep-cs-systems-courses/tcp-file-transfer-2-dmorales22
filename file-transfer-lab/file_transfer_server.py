@@ -13,7 +13,7 @@ def get_file():
     progname = "file_transfer_server"
     paramMap = params.parseParams(switchesVarDefaults)
 
-    listenPort = paramMap['listenPort']
+    listenPort = int(paramMap['listenPort'])
     listenAddr = ''       # Symbolic name meaning all available interfaces
 
     if paramMap['usage']:
@@ -31,9 +31,7 @@ def get_file():
     with open('file_from_client', 'wb') as file: 
         while 1:
             data = conn.recv(1024)
-            if data == b'BEGIN':
-                continue
-            elif data == b'ENDED':
+            if data == '':
                 print('Breaking from file write')
                 break
             else: 
