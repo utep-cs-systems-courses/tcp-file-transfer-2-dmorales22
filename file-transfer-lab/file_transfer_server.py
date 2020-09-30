@@ -6,7 +6,7 @@ import params
 
 def get_file():
     switchesVarDefaults = (
-        (('-l', '--listenPort') ,'listenPort', 50001),
+        (('-l', '--listenPort') ,'listenPort', 50003),
         (('-?', '--usage'), "usage", False), # boolean (set if present)
         )
 
@@ -27,23 +27,26 @@ def get_file():
 
     conn, addr = s.accept()  # wait until incoming connection request (and accept it)
     print('Connected by', addr)
-    while 1:
-        data = conn.recv(1024).decode()
-        if not data: 
-            break
+    
+    with open('file_from_client', 'wb') as file: 
+        while 1:
+            data = conn.recv(1024)
+            if data == b'BEGIN':
+                continue
+            elif data == b'ENDED':
+                print('Breaking from file write')
+                break
+            else: 
+                file.write(data)
+            if not data:
+                break
 
-        filename = "testfile"
-        file = open(filename,'rb')
-        stream = file.read(1024)
-        while stream:
-            conn.send(stream)
-            stream  = f.read(1024)
         file.close()
 
-    print("Got file!")
-    conn.send("Got free virus. Thank you.")
+    print("Got virus")
     conn.close()
-
+    
+        
 def main():
     get_file()
 

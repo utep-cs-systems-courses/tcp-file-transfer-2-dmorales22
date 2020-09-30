@@ -7,7 +7,7 @@ import params
 
 def send_file():
     switchesVarDefaults = (
-        (('-s', '--server'), 'server', "127.0.0.1:50001"),
+        (('-s', '--server'), 'server', "127.0.0.1:50003"),
         (('-?', '--usage'), "usage", False), # boolean (set if present)
         )
 
@@ -42,28 +42,20 @@ def send_file():
         print('could not open socket')
         sys.exit(1)
 
-    outMessage = b"Hello world!"
+    with open("testfile", 'rb') as file:
+        s.send(b'BEGIN')
+        while True:
+            data = file.read(1024)
+            s.send(data)
+            if not data:
+                break 
+        s.send(b'ENDED')
+        file.close()
 
-    print("sending '%s'" % outMessage)
-    sendAll(s, outMessage)
-
-    data = s.recv(1024).decode()
-    print("Received '%s'" % data)
-
-    print("sending '%s'" % outMessage)
-    sendAll(s, outMessage)
-
-    s.shutdown(socket.SHUT_WR)      # no more output
-
-    while 1:
-        data = s.recv(1024).decode()
-        print("Received '%s'" % data)
-        if len(data) == 0:
-            break
-    print("Zero length read.  Closing")
+    print("Sent file!")
     s.close()
 
-def main()
+def main():
     send_file()
 
 main()
