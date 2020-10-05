@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 09/30/2020
+#Last Modification: 10/05/2020
 #Purpose: File transfer program (server)
 
 import socket, sys, re, os
@@ -22,6 +22,7 @@ def sendAll(sock, buf):
 def get_file():
     switchesVarDefaults = (
         (('-l', '--listenPort') ,'listenPort', 50003),
+        (('-d', '--debug'), "debug", False),
         (('-?', '--usage'), "usage", False), # boolean (set if present)
         )
 
@@ -41,25 +42,36 @@ def get_file():
     print("Server is listening for clients...")
     # s is a factory for connected sockets
 
-    conn, addr = s.accept()  # wait until incoming connection request (and accept it)
-    print('Connected by', addr)
+    while 1:
+        conn, addr = s.accept()
+        from framedSock import framedSend, framedReceive
+        rc = os.fork()
+        if rc == 0: 
+            print('Connected by', addr)
 
-    if os.path.exists("received_file") == True: #checks if filename is directory
-        print("File exists. Overwriting original...")
+            if os.path.exists("received_file") == True: #checks if filename is directory
+                print("File exists. Overwriting original...")
 
+            #filename_flag = bytes("FILE:", 'utf-8')
 
-    with open("received_file", 'wb') as file: 
-        while 1:
-            data = conn.recv(1024)
-            if not data:
-                break
-            if data == '':
-                print('Breaking from file write')
-                break
-            else: 
-                file.write(data)
+            with open("received_file", 'wb') as file: 
+                while 1:
+                    data = conn.recv(1024)
+                    
+                    if not data:
+                        break
+                    elif data == '':
+                        print('Breaking from file write')
+                        break
+                    else: 
+                        #data.replace(filename_flag, 'b''')
+                        print(data)
+                        file.write(data)
 
-        file.close()
+                file.close()
+
+        if rc > 0:
+            continue
 
     print("Got virus")
     conn.close()

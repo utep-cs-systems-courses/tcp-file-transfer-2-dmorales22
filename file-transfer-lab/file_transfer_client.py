@@ -5,12 +5,13 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 09/30/2020
+#Last Modification: 10/05/2020
 #Purpose: File transfer program (client)
 
 import socket, sys, re, os
 sys.path.append("../lib")       # for params
 import params
+from framedSock import framedSend, framedReceive
 
 def sendAll(sock, buf):
     while len(buf):
@@ -23,6 +24,7 @@ def send_file():
     switchesVarDefaults = (
         (('-s', '--server'), 'server', "127.0.0.1:50003"),
         (('-f', '--file'), 'filename', 'testfile'),
+        (('-d', '--debug'), "debug", False),
         (('-?', '--usage'), "usage", False), # boolean (set if present)
         )
 
@@ -30,7 +32,7 @@ def send_file():
     progname = "file_transfer_client"
     paramMap = params.parseParams(switchesVarDefaults)
 
-    server, usage, filename = paramMap["server"], paramMap["usage"], paramMap["filename"]
+    server, usage, filename, debug = paramMap["server"], paramMap["usage"], paramMap["filename"], paramMap["debug"]
 
     if usage:
         params.usage()
@@ -76,6 +78,9 @@ def send_file():
 
     except FileNotFoundError:
         print("File not found. Try again.")
+    
+    #filename_byte = bytes("FILE:" + filename, 'utf-8')
+    #s.send(filename_byte)
     s.close()
 
 
