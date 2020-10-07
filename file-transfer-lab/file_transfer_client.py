@@ -70,17 +70,17 @@ def send_file():
         with open(filename, 'rb') as file:
             while True:
                 data = file.read(1024)
-                s.send(data)
+                framedSend(s, data, debug)
+                #s.send(data)
                 if not data:
                     break 
+                print("received:", framedReceive(s, debug))
             file.close()
             print("Sent file!")
 
     except FileNotFoundError:
         print("File not found. Try again.")
-    
-    #filename_byte = bytes("FILE:" + filename, 'utf-8')
-    #s.send(filename_byte)
+
     s.close()
 
 

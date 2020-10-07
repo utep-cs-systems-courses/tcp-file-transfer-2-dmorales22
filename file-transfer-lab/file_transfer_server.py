@@ -28,9 +28,9 @@ def get_file():
 
     progname = "file_transfer_server"
     paramMap = params.parseParams(switchesVarDefaults)
-
     listenPort = int(paramMap['listenPort'])
     listenAddr = ''       # Symbolic name meaning all available interfaces
+    debug = paramMap['debug']
 
     if paramMap['usage']:
         params.usage()
@@ -46,30 +46,28 @@ def get_file():
         conn, addr = s.accept()
         from framedSock import framedSend, framedReceive
         rc = os.fork()
+
         if rc == 0: 
             print('Connected by', addr)
 
             if os.path.exists("received_file") == True: #checks if filename is directory
                 print("File exists. Overwriting original...")
 
-            #filename_flag = bytes("FILE:", 'utf-8')
-
             with open("received_file", 'wb') as file: 
                 while 1:
-                    data = conn.recv(1024)
-                    
+                    #data = conn.recv(1024)
+                    data = framedReceive(conn, debug)
+                    if debug: 
+                        print("rec'd: ", data)
                     if not data:
-                        break
-                    elif data == '':
-                        print('Breaking from file write')
-                        break
-                    else: 
-                        #data.replace(filename_flag, 'b''')
-                        print(data)
-                        file.write(data)
+                        if debug: 
+                            print("child exiting")
+                        sys.exit(0)
+                    data += b"!"             # make emphatic!
+                    framedSend(conn, data, debug)
+                    file.write(data)
 
                 file.close()
-
         if rc > 0:
             continue
 
