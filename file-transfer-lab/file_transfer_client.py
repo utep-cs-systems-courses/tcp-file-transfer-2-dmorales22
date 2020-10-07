@@ -37,39 +37,34 @@ def send_file():
         print("Can't parse server:port from '%s'" % server)
         sys.exit(1)
 
-
     addrFamily = socket.AF_INET
     socktype = socket.SOCK_STREAM
     addrPort = (serverHost, serverPort)
-
     sock = socket.socket(addrFamily, socktype)
-    if sock is None:
+
+    if sock is None: #If cannot open socket
         print('could not open socket')
         sys.exit(1)
 
     sock.connect(addrPort)
 
-    if sock is None:
-        print('could not open socket')
-        sys.exit(1)
-
-    if os.stat(filename).st_size == 0:
+    if os.stat(filename).st_size == 0: #Checks if file is empty and rejects it
         print("No zero length files allowed. Try again.")
         sock.close()
         sys.exit(1)
 
-    try:
-        with open(filename, 'rb') as file:
+    try: 
+        with open(filename, 'rb') as file: #Opens file to read
             while True:
-                data = file.read(1024)
-                framedSend(sock, data, debug)
+                data = file.read(1024) #Reads file by 1024 bytes
+                framedSend(sock, data, debug) #Sends data 
                 if not data:
                     break 
-                print("received:", framedReceive(sock, debug))
+                print("received:", framedReceive(sock, debug)) #Checks if server is okay
             file.close()
             print("Sent file!")
 
-    except FileNotFoundError:
+    except FileNotFoundError: #If file is not found
         print("File not found. Try again.")
 
     sock.close()
