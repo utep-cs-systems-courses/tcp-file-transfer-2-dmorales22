@@ -12,16 +12,9 @@ import socket, sys, re, os
 sys.path.append("../lib")       # for params
 import params
 
-def sendAll(sock, buf):
-    while len(buf):
-        print(f"trying to send <{buf}>...")
-        nbytes = sock.send(buf)
-        print(f" {nbytes} bytes sent, {len(buf) - nbytes} bytes remain")
-        buf = buf[nbytes:]
-
 def get_file():
     switchesVarDefaults = (
-        (('-l', '--listenPort') ,'listenPort', 50003),
+        (('-l', '--listenPort') ,'listenPort', 50001),
         (('-d', '--debug'), "debug", False),
         (('-?', '--usage'), "usage", False), # boolean (set if present)
         )
@@ -36,14 +29,14 @@ def get_file():
         params.usage()
 
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   #Creates socket
-    s.bind((listenAddr, listenPort))                        # Binds socket
-    s.listen(1)                                             # allow only one outstanding request
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   #Creates socket
+    sock.bind((listenAddr, listenPort))                        # Binds socket
+    sock.listen(1)                                             # allow only one outstanding request
     print("Server is listening for clients...")
     # s is a factory for connected sockets
 
     while 1:
-        conn, addr = s.accept()
+        conn, addr = sock.accept()
         from framedSock import framedSend, framedReceive
         rc = os.fork()
 
@@ -55,7 +48,6 @@ def get_file():
 
             with open("received_file", 'wb') as file: 
                 while 1:
-                    #data = conn.recv(1024)
                     data = framedReceive(conn, debug)
                     if debug: 
                         print("rec'd: ", data)
@@ -63,7 +55,7 @@ def get_file():
                         if debug: 
                             print("child exiting")
                         sys.exit(0)
-                    data += b"!"             # make emphatic!
+                    #data += b"!"             # make emphatic!
                     framedSend(conn, data, debug)
                     file.write(data)
 
@@ -71,7 +63,6 @@ def get_file():
         if rc > 0:
             continue
 
-    print("Got virus")
     conn.close()
 
 def main():

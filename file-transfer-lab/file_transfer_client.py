@@ -13,16 +13,9 @@ sys.path.append("../lib")       # for params
 import params
 from framedSock import framedSend, framedReceive
 
-def sendAll(sock, buf):
-    while len(buf):
-        print(f"trying to send <{buf}>...")
-        nbytes = sock.send(buf)
-        print(f" {nbytes} bytes sent, {len(buf) - nbytes} bytes remain")
-        buf = buf[nbytes:]
-
 def send_file():
     switchesVarDefaults = (
-        (('-s', '--server'), 'server', "127.0.0.1:50003"),
+        (('-s', '--server'), 'server', "127.0.0.1:50000"),
         (('-f', '--file'), 'filename', 'testfile'),
         (('-d', '--debug'), "debug", False),
         (('-?', '--usage'), "usage", False), # boolean (set if present)
@@ -49,40 +42,37 @@ def send_file():
     socktype = socket.SOCK_STREAM
     addrPort = (serverHost, serverPort)
 
-    s = socket.socket(addrFamily, socktype)
-    if s is None:
+    sock = socket.socket(addrFamily, socktype)
+    if sock is None:
         print('could not open socket')
         sys.exit(1)
 
-    s.connect(addrPort)
+    sock.connect(addrPort)
 
-    if s is None:
+    if sock is None:
         print('could not open socket')
         sys.exit(1)
-
 
     if os.stat(filename).st_size == 0:
         print("No zero length files allowed. Try again.")
-        s.close()
+        sock.close()
         sys.exit(1)
 
     try:
         with open(filename, 'rb') as file:
             while True:
                 data = file.read(1024)
-                framedSend(s, data, debug)
-                #s.send(data)
+                framedSend(sock, data, debug)
                 if not data:
                     break 
-                print("received:", framedReceive(s, debug))
+                print("received:", framedReceive(sock, debug))
             file.close()
             print("Sent file!")
 
     except FileNotFoundError:
         print("File not found. Try again.")
 
-    s.close()
-
+    sock.close()
 
 def main():
     send_file()
