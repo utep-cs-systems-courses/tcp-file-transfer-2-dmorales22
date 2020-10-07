@@ -28,10 +28,9 @@ def get_file():
     if paramMap['usage']:
         params.usage()
 
-
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   #Creates socket
     sock.bind((listenAddr, listenPort))                        # Binds socket
-    sock.listen(10) # allow only one outstanding request
+    sock.listen(1) # allow only one outstanding request
     print("Server is listening for clients...") # s is a factory for connected sockets
 
     while 1: #Runs infinite loop until user closes program
@@ -41,6 +40,9 @@ def get_file():
 
         if rc == 0: #Child process does all the file transfer 
             print('Connected by', addr)
+
+            #msg = framedReceive(conn, debug)
+            #filename = msg.split("!")
 
             if os.path.exists("received_file") == True: #Checks if filename is directory
                 print("File exists. Overwriting original...")
@@ -54,11 +56,12 @@ def get_file():
                         if debug: 
                             print("child exiting")
                         sys.exit(0)
-                    #data += b"!"             # make emphatic!
+                    #data += b"!"                #Make emphatic!
                     framedSend(conn, data, debug) #Sends back to client if things are okay.
                     file.write(data) #Writes to file 
 
                 file.close()
+
         if rc > 0: #Parent process continues loop to allow for more clients 
             continue
 

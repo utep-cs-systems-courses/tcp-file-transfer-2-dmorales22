@@ -53,6 +53,8 @@ def send_file():
         sock.close()
         sys.exit(1)
 
+        #framedSend(sock, bytes(filename), debug)
+
     try: 
         with open(filename, 'rb') as file: #Opens file to read
             while True:
