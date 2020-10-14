@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/05/2020
+#Last Modification: 10/14/2020
 #Purpose: File transfer program (server)
 
 import socket, sys, re, os
@@ -19,7 +19,7 @@ def get_file():
         (('-?', '--usage'), "usage", False), # boolean (set if present)
         )
 
-    progname = "file_transfer_server"
+    progname = "file_transfer_server_forked"
     paramMap = params.parseParams(switchesVarDefaults)
     listenPort = int(paramMap['listenPort'])
     listenAddr = ''  # Symbolic name meaning all available interfaces
@@ -33,6 +33,9 @@ def get_file():
     sock.listen(1) # allow only one outstanding request
     print("Server is listening for clients...") # s is a factory for connected sockets
 
+    if os.path.isdir("received_files") == False:
+        os.mkdir("received_files")
+
     while 1: #Runs infinite loop until user closes program
         conn, addr = sock.accept() #Accepts connection 
         from framedSock import framedSend, framedReceive
@@ -41,13 +44,18 @@ def get_file():
         if rc == 0: #Child process does all the file transfer 
             print('Connected by', addr)
 
-            #msg = framedReceive(conn, debug)
-            #filename = msg.split("!")
+            filename_byte = framedReceive(conn, debug)
+            filename = filename_byte.decode("utf-8")
+            print("File receiving: " + filename)
 
-            if os.path.exists("received_file") == True: #Checks if filename is directory
+            if os.path.exists("received_files/" + filename) == True: #Checks if filename is directory
+                framedSend(conn, b'1', debug)
                 print("File exists. Overwriting original...")
 
-            with open("received_file", 'wb') as file: #Creates file to write data to
+            else:
+                framedSend(conn, b'0', debug)
+
+            with open("received_files/" + filename, 'wb') as file: #Creates file to write data to
                 while 1:
                     data = framedReceive(conn, debug) #Receives data from client
                     if debug: #Debug info 

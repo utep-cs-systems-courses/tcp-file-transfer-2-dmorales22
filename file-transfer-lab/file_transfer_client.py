@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/05/2020
+#Last Modification: 10/14/2020
 #Purpose: File transfer program (client)
 
 import socket, sys, re, os
@@ -20,7 +20,6 @@ def send_file():
         (('-d', '--debug'), "debug", False),
         (('-?', '--usage'), "usage", False), # boolean (set if present)
         )
-
 
     progname = "file_transfer_client"
     paramMap = params.parseParams(switchesVarDefaults)
@@ -53,7 +52,11 @@ def send_file():
         sock.close()
         sys.exit(1)
 
-        #framedSend(sock, bytes(filename), debug)
+    framedSend(sock, bytes(filename, 'utf-8'), debug) #Sends filename to server
+    file_exists = framedReceive(sock, debug) #Gets response from server if file exists
+
+    if file_exists == b'1': #If file exists on server
+        print("File exists. Will override...")
 
     try: 
         with open(filename, 'rb') as file: #Opens file to read

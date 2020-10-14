@@ -20,7 +20,7 @@ switchesVarDefaults = (
     (('-?', '--usage'), "usage", False), # boolean (set if present)
     )
 
-progname = "file_transfer_server"
+progname = "file_transfer_server_thread"
 paramMap = params.parseParams(switchesVarDefaults)
 listenPort = int(paramMap['listenPort'])
 listenAddr = ''  # Symbolic name meaning all available interfaces
@@ -34,6 +34,8 @@ sock.bind((listenAddr, listenPort))                        # Binds socket
 sock.listen(5) # allow only one outstanding request
 print("Server is listening for clients...") # s is a factory for connected sockets
 
+if os.path.isdir("received_files") == False: #Checks if directory where recieved files are stored exists.
+    os.mkdir("received_files") #Creates directory if it doesn't exist
 
 class Server(Thread):
     def __init__(self, sockAddr):
@@ -42,26 +44,30 @@ class Server(Thread):
         self.fsock = EncapFramedSock(sockAddr)
     def run(self):
         print('Connected by', self.addr)
+ 
+        filename_byte = self.fsock.receive(debug) #First recieves filename from client
+        filename = filename_byte.decode("utf-8")
+        print("File receiving: " + filename)
 
-        #msg = framedReceive(conn, debug)
-        #filename = msg.split("!")
-
-        if os.path.exists("received_file") == True: #Checks if filename is directory
+        if os.path.exists("received_files/" + filename) == True: #Checks if filename is directory
+            self.fsock.send(b'1', debug) #Sends back to client that file exists on server directory
             print("File exists. Overwriting original...")
 
-        with open("received_file", 'wb') as file: #Creates file to write data to
+        else:
+            self.fsock.send(b'0', debug) #Sends back to client that file does not exist on server directory
+
+        with open("received_files/" + filename, 'wb') as file: #Creates file to write data to
             while 1:
-                #data = framedReceive(conn, debug) #Receives data from client
-                data = self.fsock.receive(debug)
+                data = self.fsock.receive(debug) #Receives data from client
+
                 if debug: #Debug info 
                     print("rec'd: ", data)
                 if not data: #Exits if data is null or non-existent 
                     if debug: 
                         print(f"thread connected to {addr} done")
-                    self.fsock.close()
+                    self.fsock.close() #Close connection
                     return
-                #data += b"!"                #Make emphatic!
-                #framedSend(conn, data, debug) #Sends back to client if things are okay.
+
                 self.fsock.send(data, debug)
                 file.write(data) #Writes to file 
 
@@ -69,7 +75,6 @@ class Server(Thread):
         self.fsock.close()
 
 while 1:
-    #conn, addr = sock.accept() #Accepts connection 
     sockAddr = sock.accept()
     server = Server(sockAddr)
     server.start()
