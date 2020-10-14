@@ -61,13 +61,11 @@ def get_file():
                     file.write(data) #Writes to file 
 
                 file.close()
+            conn.close()
 
         if rc > 0: #Parent process continues loop to allow for more clients 
             continue
 
     conn.close()
 
-def main():
-    get_file()
-
-main()
+get_file()
