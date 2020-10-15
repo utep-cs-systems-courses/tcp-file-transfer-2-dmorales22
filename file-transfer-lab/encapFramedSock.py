@@ -32,7 +32,7 @@ class EncapFramedSock:               # a facade
          payload = self.rbuf[0:msgLength]
          self.rbuf = self.rbuf[msgLength:]
          return payload
-      r = self.sock.recv(100)
+      r = self.sock.recv(16384)
       self.rbuf += r
       if len(r) == 0:
         if len(self.rbuf) != 0:

@@ -64,7 +64,7 @@ def get_file():
                         if debug: 
                             print("child exiting")
                         sys.exit(0)
-                    #data += b"!"                #Make emphatic!
+
                     framedSend(conn, data, debug) #Sends back to client if things are okay.
                     file.write(data) #Writes to file 
 

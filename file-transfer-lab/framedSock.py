@@ -31,7 +31,7 @@ def framedReceive(sock, debug=0):
                  payload = rbuf[0:msgLength]
                  rbuf = rbuf[msgLength:]
                  return payload
-         r = sock.recv(1024)
+         r = sock.recv(16384)
          rbuf += r
          if len(r) == 0:
              if len(rbuf) != 0:

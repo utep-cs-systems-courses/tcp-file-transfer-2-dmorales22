@@ -61,7 +61,7 @@ def send_file():
     try: 
         with open(filename, 'rb') as file: #Opens file to read
             while True:
-                data = file.read(1024) #Reads file by 1024 bytes
+                data = file.read(16384) #Reads file by 16384 bytes
                 framedSend(sock, data, debug) #Sends data 
                 if not data:
                     break 
