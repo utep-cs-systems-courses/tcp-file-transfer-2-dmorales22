@@ -53,22 +53,24 @@ def get_file():
                 print("File exists. Overwriting original...")
 
             else:
-                framedSend(conn, b'0', debug)
+                framedSend(conn, b'0', debug) #Sends back to client that file does not exist on server directory
 
             with open("received_files/" + filename, 'wb') as file: #Creates file to write data to
                 while 1:
                     data = framedReceive(conn, debug) #Receives data from client
+
                     if debug: #Debug info 
-                        print("rec'd: ", data)
-                    if not data: #Exits if data is null or non-existent 
+                        print("Data received: ", data)
+                    if not data: #Exits if data is None type or non-existent 
+                        print("File: '" + filename + "' received!")
                         if debug: 
-                            print("child exiting")
+                            print("Child exiting!")
                         sys.exit(0)
 
-                    framedSend(conn, data, debug) #Sends back to client if things are okay.
                     file.write(data) #Writes to file 
+                    framedSend(conn, data, debug) #Sends response back to client
 
-                file.close()
+                file.close() #Closes file writer
             conn.close()
 
         if rc > 0: #Parent process continues loop to allow for more clients 

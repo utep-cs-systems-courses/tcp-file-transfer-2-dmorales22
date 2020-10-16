@@ -42,7 +42,7 @@ def send_file():
     sock = socket.socket(addrFamily, socktype)
 
     if sock is None: #If cannot open socket
-        print('could not open socket')
+        print("Could not open socket!")
         sys.exit(1)
 
     sock.connect(addrPort)
@@ -55,6 +55,7 @@ def send_file():
     framedSend(sock, bytes(filename, 'utf-8'), debug) #Sends filename to server
     file_exists = framedReceive(sock, debug) #Gets response from server if file exists
 
+    print("Sending file: " + filename)
     if file_exists == b'1': #If file exists on server
         print("File exists. Will override...")
 
@@ -62,12 +63,16 @@ def send_file():
         with open(filename, 'rb') as file: #Opens file to read
             while True:
                 data = file.read(16384) #Reads file by 16384 bytes
-                framedSend(sock, data, debug) #Sends data 
-                if not data:
-                    break 
-                print("received:", framedReceive(sock, debug)) #Checks if server is okay
-            file.close()
-            print("Sent file!")
+                framedSend(sock, data, debug) #Sends data
+
+                if not data: #Breaks if data is None type
+                    break
+                data_sent = framedReceive(sock, debug) #Saves server response
+                if debug:
+                    print("Data sent: ", data_sent)
+
+            print("File: '" + filename + "' sent!")
+            file.close() #Closes file reader
 
     except FileNotFoundError: #If file is not found
         print("File not found. Try again.")

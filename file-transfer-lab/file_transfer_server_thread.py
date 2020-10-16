@@ -11,7 +11,7 @@
 import socket, sys, re, os
 sys.path.append("../lib")       # for params
 import params
-from threading import Thread
+from threading import Thread, Lock
 from encapFramedSock import EncapFramedSock
 
 switchesVarDefaults = (
@@ -34,8 +34,11 @@ sock.bind((listenAddr, listenPort))                        # Binds socket
 sock.listen(5) # allow only one outstanding request
 print("Server is listening for clients...") # s is a factory for connected sockets
 
-if os.path.isdir("received_files") == False: #Checks if directory where recieved files are stored exists.
+if os.path.isdir("received_files") == False: #Checks if directory where received files are stored exists.
     os.mkdir("received_files") #Creates directory if it doesn't exist
+
+lock = Lock()
+active_files = []
 
 class Server(Thread):
     def __init__(self, sockAddr):
@@ -45,7 +48,7 @@ class Server(Thread):
     def run(self):
         print('Connected by', self.addr)
  
-        filename_byte = self.fsock.receive(debug) #First recieves filename from client
+        filename_byte = self.fsock.receive(debug) #First receives filename from client
         filename = filename_byte.decode("utf-8")
         print("File receiving: " + filename)
 
@@ -55,23 +58,39 @@ class Server(Thread):
 
         else:
             self.fsock.send(b'0', debug) #Sends back to client that file does not exist on server directory
+#
+        lock.acquire()
+        if filename in active_files:
+            print("Cannot complete transfer. File is active.")
+            self.fsock.close()
+            return
+        else:
+            active_files.append(filename)
+        lock.release()
+#
 
         with open("received_files/" + filename, 'wb') as file: #Creates file to write data to
             while 1:
                 data = self.fsock.receive(debug) #Receives data from client
 
                 if debug: #Debug info 
-                    print("rec'd: ", data)
-                if not data: #Exits if data is null or non-existent 
+                    print("Data received: ", data)
+                if not data: #Exits if data is None type or non-existent 
+                    print("File: '" + filename + "' received!")
+                    lock.acquire()
+                    active_files.remove(filename)
+                    lock.release()
+
                     if debug: 
                         print(f"thread connected to {addr} done")
                     self.fsock.close() #Close connection
+                    file.close()
                     return
 
-                self.fsock.send(data, debug)
                 file.write(data) #Writes to file 
+                self.fsock.send(data, debug) #Sends response back to client
 
-            file.close()
+            file.close() #Closes file writer
         self.fsock.close()
 
 while 1:
