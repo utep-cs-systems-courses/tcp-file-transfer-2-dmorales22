@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/16/2020
+#Last Modification: 10/17/2020
 #Purpose: File transfer program (server w/ threading)
 
 import socket, sys, re, os
@@ -37,8 +37,8 @@ print("Server is listening for clients...") # s is a factory for connected socke
 if os.path.isdir("received_files") == False: #Checks if directory where received files are stored exists.
     os.mkdir("received_files") #Creates directory if it doesn't exist
 
-lock = Lock()
-active_files = [] #Creating list to keep track of active files
+lock = Lock() #Creates the lock
+active_files = [] #Creating list to keep track of active files within the lock
 
 class Server(Thread):
     def __init__(self, sockAddr):
@@ -47,7 +47,7 @@ class Server(Thread):
         self.fsock = EncapFramedSock(sockAddr)
     def run(self):
         print('Connected by', self.addr)
-        file_info = self.fsock.receive(debug).decode("utf-8").split(":") #First receives filename from client
+        file_info = self.fsock.receive(debug).decode("utf-8").split(":") #First receives filename and file size from client. 
         filename, file_size_str = file_info[0], file_info[1]
         print("File receiving: '" + filename + "' Size: " + file_size_str)
         file_size = int(file_size_str)

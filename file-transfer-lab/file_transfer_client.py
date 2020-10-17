@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/16/2020
+#Last Modification: 10/17/2020
 #Purpose: File transfer program (client)
 
 import socket, sys, re, os
@@ -14,7 +14,7 @@ import params
 from framedSock import framedSend, framedReceive
 
 def send_file():
-    switchesVarDefaults = (
+    switchesVarDefaults = ( 
         (('-s', '--server'), 'server', "127.0.0.1:50000"),
         (('-f', '--file'), 'filename', 'testfile'),
         (('-r', '--remote'), 'filename_r','testfile'), 
@@ -30,14 +30,14 @@ def send_file():
     if usage:
         params.usage()
 
-    try:
+    try: #Tries to parse server name 
         serverHost, serverPort = re.split(":", server)
         serverPort = int(serverPort)
     except:
         print("Can't parse server:port from '%s'" % server)
         sys.exit(1)
 
-    addrFamily = socket.AF_INET
+    addrFamily = socket.AF_INET #Creates socket 
     socktype = socket.SOCK_STREAM
     addrPort = (serverHost, serverPort)
     sock = socket.socket(addrFamily, socktype)

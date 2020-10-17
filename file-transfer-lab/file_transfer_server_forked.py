@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/16/2020
+#Last Modification: 10/17/2020
 #Purpose: File transfer program (server w/ forks)
 
 import socket, sys, re, os
@@ -43,7 +43,7 @@ def get_file():
 
         if rc == 0: #Child process does all the file transfer 
             print('Connected by', addr)
-            file_info = framedReceive(conn, debug).decode("utf-8").split(":") #First receives filename from client
+            file_info = framedReceive(conn, debug).decode("utf-8").split(":") #First receives filename and file size from client. 
             filename, file_size_str = file_info[0], file_info[1]
             print("File receiving: '" + filename + "' Size: " + file_size_str)
 
