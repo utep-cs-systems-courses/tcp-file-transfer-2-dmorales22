@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/14/2020
+#Last Modification: 10/16/2020
 #Purpose: File transfer program (client)
 
 import socket, sys, re, os
@@ -17,6 +17,7 @@ def send_file():
     switchesVarDefaults = (
         (('-s', '--server'), 'server', "127.0.0.1:50000"),
         (('-f', '--file'), 'filename', 'testfile'),
+        (('-r', '--remote'), 'filename_r','testfile'), 
         (('-d', '--debug'), "debug", False),
         (('-?', '--usage'), "usage", False), # boolean (set if present)
         )
@@ -24,7 +25,7 @@ def send_file():
     progname = "file_transfer_client"
     paramMap = params.parseParams(switchesVarDefaults)
 
-    server, usage, filename, debug = paramMap["server"], paramMap["usage"], paramMap["filename"], paramMap["debug"]
+    server, usage, filename, debug, filename_r = paramMap["server"], paramMap["usage"], paramMap["filename"], paramMap["debug"], paramMap["filename_r"] #Getting parameters usage from args
 
     if usage:
         params.usage()
@@ -52,22 +53,35 @@ def send_file():
         sock.close()
         sys.exit(1)
 
-    framedSend(sock, bytes(filename, 'utf-8'), debug) #Sends filename to server
-    file_exists = framedReceive(sock, debug) #Gets response from server if file exists
+    file_size = os.path.getsize(filename) #Gets file size 
 
-    print("Sending file: " + filename)
+    if filename_r == "testfile": #If remote usage is default 
+        filename_r = filename
+
+    framedSend(sock, bytes(filename_r + ":" + str(file_size), 'utf-8'), debug) #Sends filename to server
+    file_exists = framedReceive(sock, debug) #Gets response from server if file exists
+    print("Sending file: '" + filename + "', Remote name: '" + filename_r + "'")
+
     if file_exists == b'1': #If file exists on server
         print("File exists. Will override...")
 
     try: 
         with open(filename, 'rb') as file: #Opens file to read
             while True:
-                data = file.read(16384) #Reads file by 16384 bytes
+                data = file.read(16384) #Reads file by 16384 bytes (16kB)
                 framedSend(sock, data, debug) #Sends data
 
                 if not data: #Breaks if data is None type
                     break
+
                 data_sent = framedReceive(sock, debug) #Saves server response
+
+                if data != data_sent: #Checks if response from the server is a complete message
+                    print("Transfer failed! Connection was dropped or file active.")
+                    file.close()
+                    sock.close()
+                    sys.exit(0)
+
                 if debug:
                     print("Data sent: ", data_sent)
 
@@ -79,7 +93,4 @@ def send_file():
 
     sock.close()
 
-def main():
-    send_file()
-
-main()
+send_file()

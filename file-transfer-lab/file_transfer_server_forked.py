@@ -5,8 +5,8 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/14/2020
-#Purpose: File transfer program (server)
+#Last Modification: 10/16/2020
+#Purpose: File transfer program (server w/ forks)
 
 import socket, sys, re, os
 sys.path.append("../lib")       # for params
@@ -33,7 +33,7 @@ def get_file():
     sock.listen(1) # allow only one outstanding request
     print("Server is listening for clients...") # s is a factory for connected sockets
 
-    if os.path.isdir("received_files") == False:
+    if os.path.isdir("received_files") == False: 
         os.mkdir("received_files")
 
     while 1: #Runs infinite loop until user closes program
@@ -43,10 +43,11 @@ def get_file():
 
         if rc == 0: #Child process does all the file transfer 
             print('Connected by', addr)
+            file_info = framedReceive(conn, debug).decode("utf-8").split(":") #First receives filename from client
+            filename, file_size_str = file_info[0], file_info[1]
+            print("File receiving: '" + filename + "' Size: " + file_size_str)
 
-            filename_byte = framedReceive(conn, debug)
-            filename = filename_byte.decode("utf-8")
-            print("File receiving: " + filename)
+            file_size = int(file_size_str)
 
             if os.path.exists("received_files/" + filename) == True: #Checks if filename is directory
                 framedSend(conn, b'1', debug)
@@ -61,15 +62,21 @@ def get_file():
 
                     if debug: #Debug info 
                         print("Data received: ", data)
+
                     if not data: #Exits if data is None type or non-existent 
-                        print("File: '" + filename + "' received!")
+                        if file_size == os.path.getsize("received_files/" + filename): #Checks if file is complete by comparing sizes 
+                            print("File: '" + filename + "' received!")
+
+                        else: 
+                            print("File is incomplete due to a dropped connection. Transfer incomplete!")
+
                         if debug: 
                             print("Child exiting!")
+
                         sys.exit(0)
 
                     file.write(data) #Writes to file 
                     framedSend(conn, data, debug) #Sends response back to client
-
                 file.close() #Closes file writer
             conn.close()
 
