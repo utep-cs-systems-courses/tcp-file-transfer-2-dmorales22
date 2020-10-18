@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/17/2020
+#Last Modification: 10/18/2020
 #Purpose: File transfer program (server w/ threading)
 
 import socket, sys, re, os
@@ -52,7 +52,7 @@ class Server(Thread):
         print("File receiving: '" + filename + "' Size: " + file_size_str)
         file_size = int(file_size_str)
 
-        if os.path.exists("received_files/" + filename) == True: #Checks if filename is directory
+        if os.path.exists("received_files/" + filename) == True: #Checks if filename is in the directory
             self.fsock.send(b'1', debug) #Sends back to client that file exists on server directory
             print("File exists. Overwriting original...")
 

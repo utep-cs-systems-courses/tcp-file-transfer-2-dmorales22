@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/17/2020
+#Last Modification: 10/18/2020
 #Purpose: File transfer program (server w/ forks)
 
 import socket, sys, re, os
@@ -49,7 +49,7 @@ def get_file():
 
             file_size = int(file_size_str)
 
-            if os.path.exists("received_files/" + filename) == True: #Checks if filename is directory
+            if os.path.exists("received_files/" + filename) == True: #Checks if filename is in the directory
                 framedSend(conn, b'1', debug)
                 print("File exists. Overwriting original...")
 

@@ -19,9 +19,8 @@ The client by default will try to connect to the proxy (so run stammerProxy.py f
 
 `-?` or `--usage` or `-h`: To see the usage parameters.
 
-
 ### Server Usage: 
-The server (both versions) by default will run on `127.0.0.1:50001`. Another thing to note is that the server stores files in an automatically created directory called `received_files`. Incomplete files (due to lost connection) are not deleted, but is warned in the server console.  
+The server (both versions) by default will run on `127.0.0.1:50001`. Another thing to note is that the server stores files in an automatically created directory called `received_files/` within the same directory the server script is in. Incomplete files (due to lost connection) are not deleted, but are warned of in the server console.  
 
 `-l` or `--listenPort`: To specify a port you want to use. Example `-l 50002` in this format. 
 

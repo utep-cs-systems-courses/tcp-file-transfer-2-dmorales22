@@ -5,7 +5,7 @@
 #Instructor: Dr. Eric Freudenthal
 #T.A: David Pruitt 
 #Assignment: Project 2 
-#Last Modification: 10/17/2020
+#Last Modification: 10/18/2020
 #Purpose: File transfer program (client)
 
 import socket, sys, re, os
